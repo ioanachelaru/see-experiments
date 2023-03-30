@@ -1,5 +1,6 @@
 import DatasetPreparation
 import MlpConstruction
+import GBRconstruction
 
 
 if __name__ == '__main__':
@@ -7,3 +8,5 @@ if __name__ == '__main__':
     # MlpConstruction.kFoldCrossValidation()
     # MlpConstruction.adaptiveBoostingMLP()
     # MlpConstruction.evaluateMLP()
+    # GBRconstruction.gridSearchGradientRegressor()
+    GBRconstruction.kFoldGradientBoostingRegressor()
