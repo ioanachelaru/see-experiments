@@ -60,10 +60,10 @@ def kFoldGradientBoostingRegressor():
         print(f'Training for fold {fold_no} of 10 ...')
 
         # read current fold distribution
-        x_train_fold = np.genfromtxt(f"dataset/k-folds-raw/x_train/fold_{fold_no}.csv", delimiter=',')
-        y_train_fold = np.genfromtxt(f"dataset/k-folds-raw/y_train/fold_{fold_no}.csv", delimiter=',')
-        x_test_fold = np.genfromtxt(f"dataset/k-folds-raw/x_test/fold_{fold_no}.csv", delimiter=',')
-        y_test_fold = np.genfromtxt(f"dataset/k-folds-raw/y_test/fold_{fold_no}.csv", delimiter=',')
+        x_train_fold = np.genfromtxt(f"dataset/k-folds-normalized/x_train/fold_{fold_no}.csv", delimiter=',')
+        y_train_fold = np.genfromtxt(f"dataset/k-folds-normalized/y_train/fold_{fold_no}.csv", delimiter=',')
+        x_test_fold = np.genfromtxt(f"dataset/k-folds-normalized/x_test/fold_{fold_no}.csv", delimiter=',')
+        y_test_fold = np.genfromtxt(f"dataset/k-folds-normalized/y_test/fold_{fold_no}.csv", delimiter=',')
 
         # Fit data to model
         reg.fit(x_train_fold, y_train_fold)
@@ -80,11 +80,11 @@ def kFoldGradientBoostingRegressor():
 
         # save model to file
         print(f"Saving model for fold {fold_no:} ...")
-        pickle.dump(reg, open("models/10-fold-gbr/gbr_fold_%d_r2_%f.dat" % (fold_no, score), "wb"))
+        pickle.dump(reg, open("models/k-fold-gbr-normalized/gbr_fold_%d_r2_%f.dat" % (fold_no, score), "wb"))
 
     # Save scores per fold to file
-    savetxt(f"models/10-fold-gbr/R2_10-fold_gbr.csv", r2_per_fold, delimiter=',', fmt="%f")
-    savetxt(f"models/10-fold-gbr/MSE_10-fold_gbr.csv", mse_per_fold, delimiter=',', fmt="%f")
+    savetxt(f"models/k-fold-gbr-normalized/R2_10-fold_gbr.csv", r2_per_fold, delimiter=',', fmt="%f")
+    savetxt(f"models/k-fold-gbr-normalized/MSE_10-fold_gbr.csv", mse_per_fold, delimiter=',', fmt="%f")
 
     # == Provide average scores ==
     print('------------------------------------------------------------------------')
