@@ -13,6 +13,7 @@ from sklearn.model_selection import train_test_split
 from tensorflow.keras import models
 import pandas as pd
 import pickle
+import csv
 
 seed(42)
 
@@ -127,35 +128,35 @@ def kFoldCrossValidation():
     print('------------------------------------------------------------------------')
 
 
-def retModel():
-    return models.load_model('models/k-fold-mlp/fold_8_mse_0.115527.hdf5')
+def retModel(path='models/k-fold-mlp/fold_6.hdf5'):
+    return models.load_model(path)
 
 
 def evaluateMLP():
     model = retModel()
-    x_test = np.genfromtxt(f"dataset/k-folds-normalized/x_test/fold_8.csv", delimiter=',')
-    y_test = np.genfromtxt(f"dataset/k-folds-normalized/y_test/fold_8.csv", delimiter=',')
+    x_test = np.genfromtxt(f"dataset/k-folds-normalized/x_test/fold_6.csv", delimiter=',')
+    y_test = np.genfromtxt(f"dataset/k-folds-normalized/y_test/fold_6.csv", delimiter=',')
 
     y_pred = model.predict(x_test)
 
     plt.plot(y_test, label='actual')
     plt.plot(y_pred, label='predicted')
     plt.legend()
-    plt.savefig("models/k-fold-mlp/mlp_eval_fold_8.png")
+    plt.savefig("plots/k-fold-mlp/mlp_eval_fold_6.png")
 
 
 def adaptiveBoostingMLP():
-    x_train = np.genfromtxt(f"dataset/k-folds-normalized/x_train/fold_8.csv", delimiter=',')
-    y_train = np.genfromtxt(f"dataset/k-folds-normalized/y_train/fold_8.csv", delimiter=',')
-    x_test = np.genfromtxt(f"dataset/k-folds-normalized/x_test/fold_8.csv", delimiter=',')
-    y_test = np.genfromtxt(f"dataset/k-folds-normalized/y_test/fold_8.csv", delimiter=',')
+    x_train = np.genfromtxt(f"dataset/k-folds-normalized/x_train/fold_6.csv", delimiter=',')
+    y_train = np.genfromtxt(f"dataset/k-folds-normalized/y_train/fold_6.csv", delimiter=',')
+    x_test = np.genfromtxt(f"dataset/k-folds-normalized/x_test/fold_6.csv", delimiter=',')
+    y_test = np.genfromtxt(f"dataset/k-folds-normalized/y_test/fold_6.csv", delimiter=',')
 
     preped_model = KerasRegressor(build_fn=retModel, epochs=NUMBER_OF_EPOCHS, batch_size=BATCH_SIZE, verbose=1)
 
     boosted_model = AdaBoostRegressor(base_estimator=preped_model)
     boosted_model.fit(x_train, y_train.ravel())
 
-    with open('models/k-fold-mlp/boosted_model_fold_8.pkl', 'wb') as f:
+    with open('models/k-fold-mlp/boosted_model_fold_6.pkl', 'wb') as f:
         pickle.dump(boosted_model, f)
 
     score = boosted_model.score(x_test, y_test)
@@ -166,7 +167,7 @@ def adaptiveBoostingMLP():
     plt.plot(y_test, label='actual')
     plt.plot(y_pred, label='predicted')
     plt.legend()
-    plt.savefig("plots/k-fold-mlp/boosted_mlp_fold_8.png")
+    plt.savefig("plots/k-fold-mlp/boosted_mlp_fold_6.png")
 
     # Save and print MSE and R^2 scores
     scores = [boosted_model.score(x_test, y_test)]
@@ -176,3 +177,45 @@ def adaptiveBoostingMLP():
     print("Score MSE: %f" % scores[1])
 
     savetxt(f"models/k-fold-mlp/boosted_mlp_r2_mse.csv", scores, delimiter=',', fmt="%f")
+
+
+def testKModels():
+    x_train = np.genfromtxt('dataset/k-folds-normalized/x_train/fold_1.csv', delimiter=',')
+    y_train = np.genfromtxt('dataset/k-folds-normalized/y_train/fold_1.csv', delimiter=',')
+
+    x_test = np.genfromtxt('dataset/k-folds-normalized/x_test/fold_1.csv', delimiter=',')
+    y_test = np.genfromtxt('dataset/k-folds-normalized/y_test/fold_1.csv', delimiter=',')
+
+    predicted_vals_test = []
+    predicted_vals_train = []
+
+    fig = plt.figure()
+
+    for i in range(1, 11):
+        model = retModel(f"models/k-fold-mlp/fold_{i}.hdf5")
+
+        y_pred_test = model.predict(x_test)
+        predicted_vals_test.append(y_pred_test)
+
+        plt.plot(y_test, label='actual')
+        plt.plot(y_pred_test, label='predicted')
+        plt.legend()
+        plt.savefig(f"plots/evalMlps/test/evalMLP_fold_{i}.png")
+        fig.clear()
+
+        y_pred_train = model.predict(x_train)
+        predicted_vals_train.append(y_pred_train)
+
+        plt.plot(y_train, label='actual')
+        plt.plot(y_pred_train, label='predicted')
+        plt.legend()
+        plt.savefig(f"plots/evalMlps/train/evalMLP_fold_{i}.png")
+        fig.clear()
+
+    with open("plots/evalMlps/test/predicted_values.csv", "w") as f:
+        wr = csv.writer(f)
+        wr.writerows(predicted_vals_test)
+
+    with open("plots/evalMlps/train/predicted_values.csv", "w") as f:
+        wr = csv.writer(f)
+        wr.writerows(predicted_vals_train)
