@@ -8,6 +8,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import GridSearchCV
 from numpy import savetxt
 import pickle
+import csv
 
 features = ['TeamExp', 'ManagerExp', 'YearEnd', 'Length', 'Transactions', 'Entities',
             'PointsNonAdjust', 'Adjustment', 'PointsAjust']
@@ -85,6 +86,28 @@ def kFoldGradientBoostingRegressor():
     # Save scores per fold to file
     savetxt(f"models/k-fold-gbr-normalized/R2_10-fold_gbr.csv", r2_per_fold, delimiter=',', fmt="%f")
     savetxt(f"models/k-fold-gbr-normalized/MSE_10-fold_gbr.csv", mse_per_fold, delimiter=',', fmt="%f")
+
+    # == Provide average scores ==
+    print('------------------------------------------------------------------------')
+    print('Average scores for all folds:')
+    print(f'> R^2: {np.mean(r2_per_fold)}  MSE: {np.mean(mse_per_fold)}')
+    print('------------------------------------------------------------------------')
+
+def gbrMeanResults():
+    r2_per_fold = []
+    with open('models/k-fold-gbr-normalized/R2_10-fold_gbr.csv', 'r') as fd:
+        reader = csv.reader(fd)
+        for row in reader:
+            r2_per_fold.append(row)
+    r2_per_fold = [float(x[0]) for x in r2_per_fold]
+
+    mse_per_fold = []
+    with open('models/k-fold-gbr-normalized/MSE_10-fold_gbr.csv', 'r') as fd:
+        reader = csv.reader(fd)
+        for row in reader:
+            mse_per_fold.append(row)
+
+    mse_per_fold = [float(x[0]) for x in mse_per_fold]
 
     # == Provide average scores ==
     print('------------------------------------------------------------------------')

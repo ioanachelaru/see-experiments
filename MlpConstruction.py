@@ -179,6 +179,39 @@ def adaptiveBoostingMLP():
     savetxt(f"models/k-fold-mlp/boosted_mlp_r2_mse.csv", scores, delimiter=',', fmt="%f")
 
 
+def evaluateBoostedMLP():
+    with open('models/k-fold-mlp/boosted_model_fold_6.pkl', 'rb') as f:
+        boosted_model = pickle.load(f)
+
+    r2_scores = []
+    mse_scores = []
+
+    for i in range(1, 11):
+        x_test = np.genfromtxt(f"dataset/k-folds-normalized/x_test/fold_{i}.csv", delimiter=',')
+        y_test = np.genfromtxt(f"dataset/k-folds-normalized/y_test/fold_{i}.csv", delimiter=',')
+
+        y_pred = boosted_model.predict(x_test)
+
+        plt.plot(y_test, label='actual')
+        plt.plot(y_pred, label='predicted')
+        plt.legend()
+        plt.savefig(f"plots/k-fold-boosted-mlp/boosted_mlp_fold_{i}.png")
+
+        # Save and print MSE and R^2 scores
+        scores = [boosted_model.score(x_test, y_test)]
+        print("Score R^2: %f" % scores[0])
+        r2_scores.append(scores[0])
+
+        scores.append(mean_squared_error(y_test, boosted_model.predict(x_test)))
+        print("Score MSE: %f" % scores[1])
+        mse_scores.append(scores[1])
+
+    # append scores to csv file
+    r2_scores.append(np.mean(r2_scores))
+    savetxt(f"models/k-fold-mlp/boosted_mlp_r2_k_fold.csv", r2_scores, delimiter=',', fmt="%f")
+    mse_scores.append(np.mean(mse_scores))
+    savetxt(f"models/k-fold-mlp/boosted_mlp_mse_k_fold.csv", mse_scores, delimiter=',', fmt="%f")
+
 def testKModels():
     x_train = np.genfromtxt('dataset/k-folds-normalized/x_train/fold_1.csv', delimiter=',')
     y_train = np.genfromtxt('dataset/k-folds-normalized/y_train/fold_1.csv', delimiter=',')
